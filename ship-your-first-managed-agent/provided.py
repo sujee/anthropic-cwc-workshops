@@ -11,6 +11,7 @@ from pathlib import Path
 import streamlit as st
 
 DATA = Path("data")
+MODEL = "claude-sonnet-5-5"
 
 SYSTEM = """\
 You are the SRE Agent — an SRE/data-analyst agent embedded in an incident

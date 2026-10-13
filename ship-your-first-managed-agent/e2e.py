@@ -11,6 +11,8 @@ import anthropic
 from anthropic.lib import files_from_dir
 from dotenv import load_dotenv
 
+from provided import MODEL
+
 load_dotenv()
 HERE = Path(__file__).parent
 DATA = HERE / "data"
@@ -52,11 +54,11 @@ def handle(name, args):
 
 # 1. Agent (upload runbook skill, then attach it)
 skill = client.beta.skills.create(
-    display_title=f"Incident Triage Runbook {uuid.uuid4().hex[:6]}",
+    display_name=f"Incident Triage Runbook {uuid.uuid4().hex[:6]}",
     files=files_from_dir(HERE / "incident-triage-runbook"),
 )
 agent = client.beta.agents.create(
-    name="SRE Agent", model="claude-opus-4-8", system=SYSTEM, tools=TOOLS,
+    name="SRE Agent", model=MODEL, system=SYSTEM, tools=TOOLS,
     skills=[{"type": "custom", "skill_id": skill.id, "version": "latest"}],
 )
 # 2. Environment
