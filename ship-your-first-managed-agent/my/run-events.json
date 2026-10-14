@@ -1,0 +1,921 @@
+{
+ "question": "checkout p99 spiked ~14:32 UTC. What caused it?",
+ "model": "claude-sonnet-5-5",
+ "events": [
+  {
+   "t": 0.0,
+   "source": "you",
+   "type": "user.message",
+   "content": [
+    {
+     "type": "text",
+     "text": "checkout p99 spiked ~14:32 UTC. What caused it?"
+    }
+   ]
+  },
+  {
+   "t": 0.89,
+   "source": "agent",
+   "id": "sevt_01G63pokYij1AYTLqbb1WzCh",
+   "processed_at": "2026-10-14T19:32:39.701136Z",
+   "type": "session.status_running"
+  },
+  {
+   "t": 0.89,
+   "source": "agent",
+   "id": "sevt_01RiTbASoH773b6TA7V3rDWZ",
+   "agent_name": "anim-capture-5aa9ca",
+   "processed_at": "2026-10-14T19:32:39.701137Z",
+   "session_thread_id": "sthr_01NX4XF6HDqtyFpHZnpQQSc6",
+   "type": "session.thread_status_running"
+  },
+  {
+   "t": 0.94,
+   "source": "agent",
+   "id": "sevt_01AWfzTLWg9Z3AFnxL5qnBnr",
+   "content": [
+    {
+     "text": "checkout p99 spiked ~14:32 UTC. What caused it?",
+     "type": "text"
+    }
+   ],
+   "type": "user.message",
+   "processed_at": "2026-10-14T19:32:39.762151Z"
+  },
+  {
+   "t": 0.94,
+   "source": "agent",
+   "id": "sevt_011d3rbzWbx16RxNyDFndkyq",
+   "processed_at": "2026-10-14T19:32:39.762152Z",
+   "type": "span.model_request_start"
+  },
+  {
+   "t": 1.95,
+   "source": "agent",
+   "id": "sevt_01RofpyqLwgnoNHpUNmqBYii",
+   "input": {
+    "file_path": "/workspace/skills/incident-triage-runbook/SKILL.md"
+   },
+   "name": "read",
+   "processed_at": "2026-10-14T19:32:40.823732Z",
+   "type": "agent.tool_use",
+   "evaluated_permission": "allow",
+   "evaluation": {
+    "type": "always_allow"
+   },
+   "session_thread_id": null
+  },
+  {
+   "t": 1.95,
+   "source": "agent",
+   "id": "sevt_01RVF13JG5tFa6i41yKiL6W9",
+   "is_error": false,
+   "model_request_start_id": "sevt_011d3rbzWbx16RxNyDFndkyq",
+   "model_usage": {
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 6832,
+    "input_tokens": 4,
+    "output_tokens": 70,
+    "speed": null
+   },
+   "processed_at": "2026-10-14T19:32:40.823733Z",
+   "type": "span.model_request_end"
+  },
+  {
+   "t": 3.92,
+   "source": "agent",
+   "id": "sevt_01UnwUQmV2dqxF87FwnguhBR",
+   "processed_at": "2026-10-14T19:32:42.721720Z",
+   "tool_use_id": "sevt_01RofpyqLwgnoNHpUNmqBYii",
+   "type": "agent.tool_result",
+   "content": [
+    {
+     "text": "1\t---\n2\tname: incident-triage-runbook\n3\tdescription: The SRE team's runbook for triaging production latency and error-rate incidents. Use this whenever investigating an incident, a latency spike, elevated error rates, or when asked \"what caused X\" about a production service.\n4\t---\n5\t\n6\t# Incident triage\n7\t\n8\tIf you change the order below, say why in #sre.\n9\t\n10\t## Order of operations\n11\t\n12\t1. Pull deploys for the last 6h. Don't open the log first.\n13\t2. Line the deploy timestamps up against `p99_latency_ms` / `error_rate` for the paged service. State the gap (\"deploy 14:31, p99 moves 14:33\").\n14\t3. If a deploy lines up: pull the diff, read it. Check for the stuff in the next section.\n15\t4. ... [1494 chars]",
+     "type": "text"
+    }
+   ],
+   "is_error": false
+  },
+  {
+   "t": 3.92,
+   "source": "agent",
+   "id": "sevt_01KoDytgFdbv4EFiRzTXBx7n",
+   "processed_at": "2026-10-14T19:32:42.754102Z",
+   "type": "span.model_request_start"
+  },
+  {
+   "t": 5.48,
+   "source": "agent",
+   "id": "sevt_014tjLNzLC5KW8G1CrsTK3u7",
+   "input": {},
+   "name": "get_recent_deploys",
+   "processed_at": "2026-10-14T19:32:44.207172Z",
+   "type": "agent.custom_tool_use",
+   "session_thread_id": null
+  },
+  {
+   "t": 5.8,
+   "source": "you",
+   "type": "user.custom_tool_result",
+   "custom_tool_use_id": "sevt_014tjLNzLC5KW8G1CrsTK3u7",
+   "content": [
+    {
+     "type": "text",
+     "text": "[\n  {\n    \"ts\": \"2026-04-22T09:14:05Z\",\n    \"service\": \"cart\",\n    \"commit\": \"e21b6c9\",\n    \"author\": \"dave@shop.io\",\n    \"status\": \"success\",\n    \"summary\": \"bump lodash to 4.17.22\"\n  },\n  {\n    \"ts\": \"2026-04-22T11:02:33Z\",\n    \"service\": \"auth\",\n    \"commit\": \"9f1e2d4\",\n    \"author\": \"bob@shop.io\",\n    \"status\": \"success\",\n    \"summary\": \"add rate limiting to /refresh\"\n  },\n  {\n    \"ts\": \"2026-04-22T14:31:18Z\",\n    \"service\": \"checkout\",\n    \"commit\": \"a3f9c21\",\n    \"author\": \"alice@shop.io\",... [804 chars]"
+    }
+   ]
+  },
+  {
+   "t": 5.8,
+   "source": "agent",
+   "id": "sevt_011i58GmqhXWWHX6up2RDqT8",
+   "input": {
+    "metric": "p99_latency_ms",
+    "service": "checkout"
+   },
+   "name": "get_metrics",
+   "processed_at": "2026-10-14T19:32:44.207173Z",
+   "type": "agent.custom_tool_use",
+   "session_thread_id": null
+  },
+  {
+   "t": 6.29,
+   "source": "you",
+   "type": "user.custom_tool_result",
+   "custom_tool_use_id": "sevt_011i58GmqhXWWHX6up2RDqT8",
+   "content": [
+    {
+     "type": "text",
+     "text": "[{\"ts\": \"2026-04-22T14:00:00Z\", \"value\": 62.448}, {\"ts\": \"2026-04-22T14:01:00Z\", \"value\": 58.47}, {\"ts\": \"2026-04-22T14:02:00Z\", \"value\": 69.971}, {\"ts\": \"2026-04-22T14:03:00Z\", \"value\": 56.666}, {\"ts\": \"2026-04-22T14:04:00Z\", \"value\": 67.325}, {\"ts\": \"2026-04-22T14:05:00Z\", \"value\": 63.411}, {\"ts\": \"2026-04-22T14:06:00Z\", \"value\": 56.334}, {\"ts\": \"2026-04-22T14:07:00Z\", \"value\": 66.671}, {\"ts\": \"2026-04-22T14:08:00Z\", \"value\": 55.862}, {\"ts\": \"2026-04-22T14:09:00Z\", \"value\": 64.974}, {\"ts\": \"20... [3037 chars]"
+    }
+   ]
+  },
+  {
+   "t": 6.29,
+   "source": "agent",
+   "id": "sevt_01DEnYupjLreZomaLD8rHtqf",
+   "input": {
+    "metric": "error_rate",
+    "service": "checkout"
+   },
+   "name": "get_metrics",
+   "processed_at": "2026-10-14T19:32:44.207174Z",
+   "type": "agent.custom_tool_use",
+   "session_thread_id": null
+  },
+  {
+   "t": 6.62,
+   "source": "you",
+   "type": "user.custom_tool_result",
+   "custom_tool_use_id": "sevt_01DEnYupjLreZomaLD8rHtqf",
+   "content": [
+    {
+     "type": "text",
+     "text": "[{\"ts\": \"2026-04-22T14:00:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:01:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:02:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:03:00Z\", \"value\": 0.001}, {\"ts\": \"2026-04-22T14:04:00Z\", \"value\": 0.001}, {\"ts\": \"2026-04-22T14:05:00Z\", \"value\": 0.001}, {\"ts\": \"2026-04-22T14:06:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:07:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:08:00Z\", \"value\": 0.0}, {\"ts\": \"2026-04-22T14:09:00Z\", \"value\": 0.0}, {\"ts\": \"2026-04-22T14:1... [2902 chars]"
+    }
+   ]
+  },
+  {
+   "t": 6.62,
+   "source": "agent",
+   "id": "sevt_01B3SgQ85B2SaxKasNyGGYku",
+   "is_error": false,
+   "model_request_start_id": "sevt_01KoDytgFdbv4EFiRzTXBx7n",
+   "model_usage": {
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 7497,
+    "input_tokens": 2,
+    "output_tokens": 181,
+    "speed": null
+   },
+   "processed_at": "2026-10-14T19:32:44.207175Z",
+   "type": "span.model_request_end"
+  },
+  {
+   "t": 6.62,
+   "source": "agent",
+   "id": "sevt_01Sb3snjantFoPEnHT9SkiAT",
+   "agent_name": "anim-capture-5aa9ca",
+   "processed_at": "2026-10-14T19:32:44.325311Z",
+   "session_thread_id": "sthr_01NX4XF6HDqtyFpHZnpQQSc6",
+   "stop_details": null,
+   "stop_reason": {
+    "event_ids": [
+     "sevt_014tjLNzLC5KW8G1CrsTK3u7",
+     "sevt_011i58GmqhXWWHX6up2RDqT8",
+     "sevt_01DEnYupjLreZomaLD8rHtqf"
+    ],
+    "type": "requires_action"
+   },
+   "type": "session.thread_status_idle"
+  },
+  {
+   "t": 6.62,
+   "source": "agent",
+   "id": "sevt_01Qh74LMhXuTVSjTBHoJans2",
+   "processed_at": "2026-10-14T19:32:44.325312Z",
+   "type": "session.usage",
+   "usage": {
+    "active_seconds": 4.703,
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_read_input_tokens": 14329,
+    "input_tokens": 6,
+    "list_cost": {
+     "amount": "0",
+     "currency": "USD"
+    },
+    "output_tokens": 251,
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    }
+   },
+   "budget": null
+  },
+  {
+   "t": 6.63,
+   "source": "agent",
+   "id": "sevt_01A56BctkDed5skhAieVtRgd",
+   "processed_at": "2026-10-14T19:32:44.325313Z",
+   "stop_details": null,
+   "stop_reason": {
+    "event_ids": [
+     "sevt_014tjLNzLC5KW8G1CrsTK3u7",
+     "sevt_011i58GmqhXWWHX6up2RDqT8",
+     "sevt_01DEnYupjLreZomaLD8rHtqf"
+    ],
+    "type": "requires_action"
+   },
+   "type": "session.status_idle"
+  },
+  {
+   "t": 6.63,
+   "source": "agent",
+   "id": "sevt_01NH5XU6Qr2XYrxqqJn9sv4G",
+   "custom_tool_use_id": "sevt_014tjLNzLC5KW8G1CrsTK3u7",
+   "type": "user.custom_tool_result",
+   "content": [
+    {
+     "text": "[\n  {\n    \"ts\": \"2026-04-22T09:14:05Z\",\n    \"service\": \"cart\",\n    \"commit\": \"e21b6c9\",\n    \"author\": \"dave@shop.io\",\n    \"status\": \"success\",\n    \"summary\": \"bump lodash to 4.17.22\"\n  },\n  {\n    \"ts\": \"2026-04-22T11:02:33Z\",\n    \"service\": \"auth\",\n    \"commit\": \"9f1e2d4\",\n    \"author\": \"bob@shop.io\",\n    \"status\": \"success\",\n    \"summary\": \"add rate limiting to /refresh\"\n  },\n  {\n    \"ts\": \"2026-04-22T14:31:18Z\",\n    \"service\": \"checkout\",\n    \"commit\": \"a3f9c21\",\n    \"author\": \"alice@shop.io\",\n    \"status\": \"success\",\n    \"summary\": \"refactor order summary builder for readability\"\n  },\n  {\n    \"ts\": \"2026-04-22T14:55:40Z\",\n    \"service\": \"inventory\",\n    \"commit\": \"7b3e8f0\",\n    \"author\": ... [804 chars]",
+     "type": "text"
+    }
+   ],
+   "is_error": false,
+   "processed_at": "2026-10-14T19:32:44.698778Z",
+   "session_thread_id": null
+  },
+  {
+   "t": 6.63,
+   "source": "agent",
+   "id": "sevt_01PErEYSg1T6KBvTrQjsRwRw",
+   "agent_name": "anim-capture-5aa9ca",
+   "processed_at": "2026-10-14T19:32:44.835893Z",
+   "session_thread_id": "sthr_01NX4XF6HDqtyFpHZnpQQSc6",
+   "stop_details": null,
+   "stop_reason": {
+    "event_ids": [
+     "sevt_011i58GmqhXWWHX6up2RDqT8",
+     "sevt_01DEnYupjLreZomaLD8rHtqf"
+    ],
+    "type": "requires_action"
+   },
+   "type": "session.thread_status_idle"
+  },
+  {
+   "t": 6.63,
+   "source": "agent",
+   "id": "sevt_01WSfwadJ6QK8whDdQfRmBdG",
+   "processed_at": "2026-10-14T19:32:44.835894Z",
+   "type": "session.usage",
+   "usage": {
+    "active_seconds": 4.929,
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_read_input_tokens": 14329,
+    "input_tokens": 6,
+    "list_cost": {
+     "amount": "0",
+     "currency": "USD"
+    },
+    "output_tokens": 251,
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    }
+   },
+   "budget": null
+  },
+  {
+   "t": 6.63,
+   "source": "agent",
+   "id": "sevt_019vnpmjdj6t5XCxr7MLfV4W",
+   "processed_at": "2026-10-14T19:32:44.835895Z",
+   "stop_details": null,
+   "stop_reason": {
+    "event_ids": [
+     "sevt_011i58GmqhXWWHX6up2RDqT8",
+     "sevt_01DEnYupjLreZomaLD8rHtqf"
+    ],
+    "type": "requires_action"
+   },
+   "type": "session.status_idle"
+  },
+  {
+   "t": 6.63,
+   "source": "agent",
+   "id": "sevt_01XjQtMismCDgKWPtSauFHyJ",
+   "custom_tool_use_id": "sevt_011i58GmqhXWWHX6up2RDqT8",
+   "type": "user.custom_tool_result",
+   "content": [
+    {
+     "text": "[{\"ts\": \"2026-04-22T14:00:00Z\", \"value\": 62.448}, {\"ts\": \"2026-04-22T14:01:00Z\", \"value\": 58.47}, {\"ts\": \"2026-04-22T14:02:00Z\", \"value\": 69.971}, {\"ts\": \"2026-04-22T14:03:00Z\", \"value\": 56.666}, {\"ts\": \"2026-04-22T14:04:00Z\", \"value\": 67.325}, {\"ts\": \"2026-04-22T14:05:00Z\", \"value\": 63.411}, {\"ts\": \"2026-04-22T14:06:00Z\", \"value\": 56.334}, {\"ts\": \"2026-04-22T14:07:00Z\", \"value\": 66.671}, {\"ts\": \"2026-04-22T14:08:00Z\", \"value\": 55.862}, {\"ts\": \"2026-04-22T14:09:00Z\", \"value\": 64.974}, {\"ts\": \"2026-04-22T14:10:00Z\", \"value\": 56.607}, {\"ts\": \"2026-04-22T14:11:00Z\", \"value\": 57.086}, {\"ts\": \"2026-04-22T14:12:00Z\", \"value\": 64.764}, {\"ts\": \"2026-04-22T14:13:00Z\", \"value\": 74.018}, {\"ts\": \"2026-0... [3037 chars]",
+     "type": "text"
+    }
+   ],
+   "is_error": false,
+   "processed_at": "2026-10-14T19:32:45.033642Z",
+   "session_thread_id": null
+  },
+  {
+   "t": 6.63,
+   "source": "agent",
+   "id": "sevt_01Vhb6T2E3bwrjvCk1VPQif1",
+   "agent_name": "anim-capture-5aa9ca",
+   "processed_at": "2026-10-14T19:32:45.173667Z",
+   "session_thread_id": "sthr_01NX4XF6HDqtyFpHZnpQQSc6",
+   "stop_details": null,
+   "stop_reason": {
+    "event_ids": [
+     "sevt_01DEnYupjLreZomaLD8rHtqf"
+    ],
+    "type": "requires_action"
+   },
+   "type": "session.thread_status_idle"
+  },
+  {
+   "t": 6.63,
+   "source": "agent",
+   "id": "sevt_018ymRknXGfzb3pooXc5duUi",
+   "processed_at": "2026-10-14T19:32:45.173668Z",
+   "type": "session.usage",
+   "usage": {
+    "active_seconds": 5.142,
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_read_input_tokens": 14329,
+    "input_tokens": 6,
+    "list_cost": {
+     "amount": "0",
+     "currency": "USD"
+    },
+    "output_tokens": 251,
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    }
+   },
+   "budget": null
+  },
+  {
+   "t": 6.63,
+   "source": "agent",
+   "id": "sevt_01LUm1tczEee9CFPJyimDYY4",
+   "processed_at": "2026-10-14T19:32:45.173669Z",
+   "stop_details": null,
+   "stop_reason": {
+    "event_ids": [
+     "sevt_01DEnYupjLreZomaLD8rHtqf"
+    ],
+    "type": "requires_action"
+   },
+   "type": "session.status_idle"
+  },
+  {
+   "t": 6.65,
+   "source": "agent",
+   "id": "sevt_01QLkgQjagd1rjYXtat7t2EM",
+   "custom_tool_use_id": "sevt_01DEnYupjLreZomaLD8rHtqf",
+   "type": "user.custom_tool_result",
+   "content": [
+    {
+     "text": "[{\"ts\": \"2026-04-22T14:00:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:01:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:02:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:03:00Z\", \"value\": 0.001}, {\"ts\": \"2026-04-22T14:04:00Z\", \"value\": 0.001}, {\"ts\": \"2026-04-22T14:05:00Z\", \"value\": 0.001}, {\"ts\": \"2026-04-22T14:06:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:07:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:08:00Z\", \"value\": 0.0}, {\"ts\": \"2026-04-22T14:09:00Z\", \"value\": 0.0}, {\"ts\": \"2026-04-22T14:10:00Z\", \"value\": 0.0}, {\"ts\": \"2026-04-22T14:11:00Z\", \"value\": 0.0}, {\"ts\": \"2026-04-22T14:12:00Z\", \"value\": 0.001}, {\"ts\": \"2026-04-22T14:13:00Z\", \"value\": 0.001}, {\"ts\": \"2026-04-22T14:14:00Z\", \"val... [2902 chars]",
+     "type": "text"
+    }
+   ],
+   "is_error": false,
+   "processed_at": "2026-10-14T19:32:45.521314Z",
+   "session_thread_id": null
+  },
+  {
+   "t": 6.72,
+   "source": "agent",
+   "id": "sevt_018vR7JNUesXj1cGMg19XReo",
+   "processed_at": "2026-10-14T19:32:45.594272Z",
+   "type": "session.status_running"
+  },
+  {
+   "t": 6.73,
+   "source": "agent",
+   "id": "sevt_016Wyvti397oXZCDL6fUeVjy",
+   "agent_name": "anim-capture-5aa9ca",
+   "processed_at": "2026-10-14T19:32:45.594273Z",
+   "session_thread_id": "sthr_01NX4XF6HDqtyFpHZnpQQSc6",
+   "type": "session.thread_status_running"
+  },
+  {
+   "t": 6.77,
+   "source": "agent",
+   "id": "sevt_014RLBPyLr7QEoaMGydr1Pt6",
+   "processed_at": "2026-10-14T19:32:45.639870Z",
+   "type": "span.model_request_start"
+  },
+  {
+   "t": 8.2,
+   "source": "agent",
+   "id": "sevt_01X5TRR6PVLWZRErher5Gauj",
+   "content": [
+    {
+     "text": "Checkout deploy at 14:31:18 lines up with p99 moving at 14:32 (67ms \u2192 347ms \u2192 852ms at 14:33). Pulling the diff.",
+     "type": "text"
+    }
+   ],
+   "processed_at": "2026-10-14T19:32:47.076507Z",
+   "type": "agent.message"
+  },
+  {
+   "t": 8.2,
+   "source": "agent",
+   "id": "sevt_01MrKkggZvdpoiRyunzkPdoU",
+   "input": {
+    "commit": "a3f9c21"
+   },
+   "name": "get_diff",
+   "processed_at": "2026-10-14T19:32:47.076508Z",
+   "type": "agent.custom_tool_use",
+   "session_thread_id": null
+  },
+  {
+   "t": 8.55,
+   "source": "you",
+   "type": "user.custom_tool_result",
+   "custom_tool_use_id": "sevt_01MrKkggZvdpoiRyunzkPdoU",
+   "content": [
+    {
+     "type": "text",
+     "text": "commit a3f9c21e8b4d2f1a9c0e7d3b5f8a2c4e6d9b1f0a\nAuthor: Alice Chen <alice@shop.io>\nDate:   Wed Apr 22 14:29:51 2026 +0000\n\n    refactor order summary builder for readability\n\n    The old list comprehension was getting hard to follow. Split it into\n    an explicit loop so the per-order enrichment logic is clearer.\n\ndiff --git a/checkout/handlers.py b/checkout/handlers.py\nindex 8f3a2b1..c4d9e7f 100644\n--- a/checkout/handlers.py\n+++ b/checkout/handlers.py\n@@ -41,22 +41,24 @@ class CheckoutSummaryHa... [1755 chars]"
+    }
+   ]
+  },
+  {
+   "t": 8.55,
+   "source": "agent",
+   "id": "sevt_01CNPhKVfa6MC3ZHxiTKeVW9",
+   "is_error": false,
+   "model_request_start_id": "sevt_014RLBPyLr7QEoaMGydr1Pt6",
+   "model_usage": {
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 11837,
+    "input_tokens": 2,
+    "output_tokens": 113,
+    "speed": null
+   },
+   "processed_at": "2026-10-14T19:32:47.076509Z",
+   "type": "span.model_request_end"
+  },
+  {
+   "t": 8.55,
+   "source": "agent",
+   "id": "sevt_01PicX24HFELHTKwn2Vtfutt",
+   "agent_name": "anim-capture-5aa9ca",
+   "processed_at": "2026-10-14T19:32:47.176355Z",
+   "session_thread_id": "sthr_01NX4XF6HDqtyFpHZnpQQSc6",
+   "stop_details": null,
+   "stop_reason": {
+    "event_ids": [
+     "sevt_01MrKkggZvdpoiRyunzkPdoU"
+    ],
+    "type": "requires_action"
+   },
+   "type": "session.thread_status_idle"
+  },
+  {
+   "t": 8.55,
+   "source": "agent",
+   "id": "sevt_019oo1mdm9ZtVRZivbFYmJCz",
+   "processed_at": "2026-10-14T19:32:47.176356Z",
+   "type": "session.usage",
+   "usage": {
+    "active_seconds": 6.86,
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 0
+    },
+    "cache_read_input_tokens": 26166,
+    "input_tokens": 8,
+    "list_cost": {
+     "amount": "1",
+     "currency": "USD"
+    },
+    "output_tokens": 364,
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    }
+   },
+   "budget": null
+  },
+  {
+   "t": 8.55,
+   "source": "agent",
+   "id": "sevt_01HcdEzQes41Gs1ZpSajM7Ta",
+   "processed_at": "2026-10-14T19:32:47.176357Z",
+   "stop_details": null,
+   "stop_reason": {
+    "event_ids": [
+     "sevt_01MrKkggZvdpoiRyunzkPdoU"
+    ],
+    "type": "requires_action"
+   },
+   "type": "session.status_idle"
+  },
+  {
+   "t": 8.55,
+   "source": "agent",
+   "id": "sevt_01D41rBrkfne6t9y9qFp8vb2",
+   "custom_tool_use_id": "sevt_01MrKkggZvdpoiRyunzkPdoU",
+   "type": "user.custom_tool_result",
+   "content": [
+    {
+     "text": "commit a3f9c21e8b4d2f1a9c0e7d3b5f8a2c4e6d9b1f0a\nAuthor: Alice Chen <alice@shop.io>\nDate:   Wed Apr 22 14:29:51 2026 +0000\n\n    refactor order summary builder for readability\n\n    The old list comprehension was getting hard to follow. Split it into\n    an explicit loop so the per-order enrichment logic is clearer.\n\ndiff --git a/checkout/handlers.py b/checkout/handlers.py\nindex 8f3a2b1..c4d9e7f 100644\n--- a/checkout/handlers.py\n+++ b/checkout/handlers.py\n@@ -41,22 +41,24 @@ class CheckoutSummaryHandler(BaseHandler):\n     def build_summary(self, user_id: str) -> dict:\n         orders = Order.objects.filter(user_id=user_id, status=\"open\")\n-        order_ids = [o.id for o in orders]\n-\n-        # ... [1755 chars]",
+     "type": "text"
+    }
+   ],
+   "is_error": false,
+   "processed_at": "2026-10-14T19:32:47.425102Z",
+   "session_thread_id": null
+  },
+  {
+   "t": 8.61,
+   "source": "agent",
+   "id": "sevt_01Mc8FFve3SNh1XTfefwLVgQ",
+   "processed_at": "2026-10-14T19:32:47.488178Z",
+   "type": "session.status_running"
+  },
+  {
+   "t": 8.62,
+   "source": "agent",
+   "id": "sevt_01XyDryusiUYvDWpdnUeYkAS",
+   "agent_name": "anim-capture-5aa9ca",
+   "processed_at": "2026-10-14T19:32:47.488179Z",
+   "session_thread_id": "sthr_01NX4XF6HDqtyFpHZnpQQSc6",
+   "type": "session.thread_status_running"
+  },
+  {
+   "t": 8.65,
+   "source": "agent",
+   "id": "sevt_01UMCWwJvtC5L8GpZym1ZKmn",
+   "processed_at": "2026-10-14T19:32:47.532754Z",
+   "type": "span.model_request_start"
+  },
+  {
+   "t": 10.19,
+   "source": "agent",
+   "id": "sevt_01DS46NKVMVnBzhAJbXSsBUM",
+   "processed_at": "2026-10-14T19:32:48.993242Z",
+   "type": "agent.thinking"
+  },
+  {
+   "t": 11.44,
+   "source": "agent",
+   "id": "sevt_01NwwegGMuBd9Uroxce1qLdx",
+   "content": [
+    {
+     "text": "The diff swaps one batched query for a query per order. Next I'll check the log, and look at why errors only start at 14:40.",
+     "type": "text"
+    }
+   ],
+   "processed_at": "2026-10-14T19:32:50.307176Z",
+   "type": "agent.message"
+  },
+  {
+   "t": 11.44,
+   "source": "agent",
+   "id": "sevt_015CZvsrf7b7X65h2coGiZNN",
+   "input": {
+    "command": "cd /mnt/session/uploads; wc -l app.log; head -3 app.log; grep -c 'FROM order_items WHERE order_id = ' app.log; grep -E '14:3[0-3]' app.log | head -15; echo ---; grep -E 'ERROR|WARN' app.log | awk '{print $0}' | cut -c1-220 | sed -n '1,15p'"
+   },
+   "name": "bash",
+   "processed_at": "2026-10-14T19:32:50.307177Z",
+   "type": "agent.tool_use",
+   "evaluated_permission": "allow",
+   "evaluation": {
+    "type": "always_allow"
+   },
+   "session_thread_id": null
+  },
+  {
+   "t": 11.44,
+   "source": "agent",
+   "id": "sevt_01XFj4hieG65S3wB5m8j7GQT",
+   "input": {
+    "metric": "db_pool_utilization",
+    "service": "checkout"
+   },
+   "name": "get_metrics",
+   "processed_at": "2026-10-14T19:32:50.307178Z",
+   "type": "agent.custom_tool_use",
+   "session_thread_id": null
+  },
+  {
+   "t": 11.78,
+   "source": "you",
+   "type": "user.custom_tool_result",
+   "custom_tool_use_id": "sevt_01XFj4hieG65S3wB5m8j7GQT",
+   "content": [
+    {
+     "type": "text",
+     "text": "[{\"ts\": \"2026-04-22T14:00:00Z\", \"value\": 0.103}, {\"ts\": \"2026-04-22T14:01:00Z\", \"value\": 0.214}, {\"ts\": \"2026-04-22T14:02:00Z\", \"value\": 0.163}, {\"ts\": \"2026-04-22T14:03:00Z\", \"value\": 0.118}, {\"ts\": \"2026-04-22T14:04:00Z\", \"value\": 0.165}, {\"ts\": \"2026-04-22T14:05:00Z\", \"value\": 0.103}, {\"ts\": \"2026-04-22T14:06:00Z\", \"value\": 0.163}, {\"ts\": \"2026-04-22T14:07:00Z\", \"value\": 0.217}, {\"ts\": \"2026-04-22T14:08:00Z\", \"value\": 0.204}, {\"ts\": \"2026-04-22T14:09:00Z\", \"value\": 0.184}, {\"ts\": \"2026-04-22T... [2877 chars]"
+    }
+   ]
+  },
+  {
+   "t": 11.78,
+   "source": "agent",
+   "id": "sevt_01CZEY6MrX3UVPbkU9Tstktf",
+   "is_error": false,
+   "model_request_start_id": "sevt_01UMCWwJvtC5L8GpZym1ZKmn",
+   "model_usage": {
+    "cache_creation_input_tokens": 823,
+    "cache_read_input_tokens": 11837,
+    "input_tokens": 2,
+    "output_tokens": 341,
+    "speed": null
+   },
+   "processed_at": "2026-10-14T19:32:50.307179Z",
+   "type": "span.model_request_end"
+  },
+  {
+   "t": 11.78,
+   "source": "agent",
+   "id": "sevt_01FXywtcUtPaefyUWhWGLXYc",
+   "agent_name": "anim-capture-5aa9ca",
+   "processed_at": "2026-10-14T19:32:50.407278Z",
+   "session_thread_id": "sthr_01NX4XF6HDqtyFpHZnpQQSc6",
+   "stop_details": null,
+   "stop_reason": {
+    "event_ids": [
+     "sevt_01XFj4hieG65S3wB5m8j7GQT"
+    ],
+    "type": "requires_action"
+   },
+   "type": "session.thread_status_idle"
+  },
+  {
+   "t": 11.78,
+   "source": "agent",
+   "id": "sevt_01APgaN1pfurnxzsk2yNti2J",
+   "processed_at": "2026-10-14T19:32:50.407279Z",
+   "type": "session.usage",
+   "usage": {
+    "active_seconds": 9.938,
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 823
+    },
+    "cache_read_input_tokens": 38003,
+    "input_tokens": 10,
+    "list_cost": {
+     "amount": "1",
+     "currency": "USD"
+    },
+    "output_tokens": 705,
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    }
+   },
+   "budget": null
+  },
+  {
+   "t": 11.78,
+   "source": "agent",
+   "id": "sevt_01G6QC2Yc1q8M45fWgdti5X3",
+   "processed_at": "2026-10-14T19:32:50.407280Z",
+   "stop_details": null,
+   "stop_reason": {
+    "event_ids": [
+     "sevt_01XFj4hieG65S3wB5m8j7GQT"
+    ],
+    "type": "requires_action"
+   },
+   "type": "session.status_idle"
+  },
+  {
+   "t": 11.78,
+   "source": "agent",
+   "id": "sevt_01PBR4PNGsuEqv1XNMUfDT67",
+   "processed_at": "2026-10-14T19:32:50.516761Z",
+   "type": "session.status_running"
+  },
+  {
+   "t": 11.78,
+   "source": "agent",
+   "id": "sevt_01LkSNZGMrz3Exj9HF61XkZN",
+   "agent_name": "anim-capture-5aa9ca",
+   "processed_at": "2026-10-14T19:32:50.516762Z",
+   "session_thread_id": "sthr_01NX4XF6HDqtyFpHZnpQQSc6",
+   "type": "session.thread_status_running"
+  },
+  {
+   "t": 12.67,
+   "source": "agent",
+   "id": "sevt_01FQjP2ZnDUMy11rTeEZCKg4",
+   "custom_tool_use_id": "sevt_01XFj4hieG65S3wB5m8j7GQT",
+   "type": "user.custom_tool_result",
+   "content": [
+    {
+     "text": "[{\"ts\": \"2026-04-22T14:00:00Z\", \"value\": 0.103}, {\"ts\": \"2026-04-22T14:01:00Z\", \"value\": 0.214}, {\"ts\": \"2026-04-22T14:02:00Z\", \"value\": 0.163}, {\"ts\": \"2026-04-22T14:03:00Z\", \"value\": 0.118}, {\"ts\": \"2026-04-22T14:04:00Z\", \"value\": 0.165}, {\"ts\": \"2026-04-22T14:05:00Z\", \"value\": 0.103}, {\"ts\": \"2026-04-22T14:06:00Z\", \"value\": 0.163}, {\"ts\": \"2026-04-22T14:07:00Z\", \"value\": 0.217}, {\"ts\": \"2026-04-22T14:08:00Z\", \"value\": 0.204}, {\"ts\": \"2026-04-22T14:09:00Z\", \"value\": 0.184}, {\"ts\": \"2026-04-22T14:10:00Z\", \"value\": 0.131}, {\"ts\": \"2026-04-22T14:11:00Z\", \"value\": 0.144}, {\"ts\": \"2026-04-22T14:12:00Z\", \"value\": 0.12}, {\"ts\": \"2026-04-22T14:13:00Z\", \"value\": 0.193}, {\"ts\": \"2026-04-22T14:14:00Z... [2877 chars]",
+     "type": "text"
+    }
+   ],
+   "is_error": false,
+   "processed_at": "2026-10-14T19:32:51.545630Z",
+   "session_thread_id": null
+  },
+  {
+   "t": 12.75,
+   "source": "agent",
+   "id": "sevt_0135ENah9iwHPTEDgkk1S93B",
+   "processed_at": "2026-10-14T19:32:51.617759Z",
+   "tool_use_id": "sevt_015CZvsrf7b7X65h2coGiZNN",
+   "type": "agent.tool_result",
+   "content": [
+    {
+     "text": "69740 app.log\n{\"ts\":\"2026-04-22T14:00:00.000Z\",\"level\":\"DEBUG\",\"service\":\"checkout\",\"host\":\"checkout-1\",\"msg\":\"healthcheck OK\",\"uptime_s\":74788}\n{\"ts\":\"2026-04-22T14:00:00.000Z\",\"level\":\"DEBUG\",\"service\":\"cart\",\"host\":\"cart-2\",\"msg\":\"healthcheck OK\",\"uptime_s\":81985}\n{\"ts\":\"2026-04-22T14:00:00.000Z\",\"level\":\"DEBUG\",\"service\":\"auth\",\"host\":\"auth-3\",\"msg\":\"healthcheck OK\",\"uptime_s\":39178}\n30964\n{\"ts\":\"2026-04-22T14:14:30.000Z\",\"level\":\"DEBUG\",\"service\":\"checkout\",\"host\":\"checkout-1\",\"msg\":\"healthcheck OK\",\"uptime_s\":15069}\n{\"ts\":\"2026-04-22T14:14:30.000Z\",\"level\":\"DEBUG\",\"service\":\"cart\",\"host\":\"cart-2\",\"msg\":\"healthcheck OK\",\"uptime_s\":85985}\n{\"ts\":\"2026-04-22T14:14:30.000Z\",\"level\":\"DEBUG\",... [5048 chars]",
+     "type": "text"
+    }
+   ],
+   "is_error": false
+  },
+  {
+   "t": 12.77,
+   "source": "agent",
+   "id": "sevt_019k68g3zfPr2fD9ne6qx7fs",
+   "processed_at": "2026-10-14T19:32:51.649220Z",
+   "type": "span.model_request_start"
+  },
+  {
+   "t": 16.64,
+   "source": "agent",
+   "id": "sevt_01FZA1ME73QWECr3GdU5G9fF",
+   "content": [
+    {
+     "text": "Now to confirm in the log: query counts per request before and after the deploy, and the error type at 14:40.",
+     "type": "text"
+    }
+   ],
+   "processed_at": "2026-10-14T19:32:55.449538Z",
+   "type": "agent.message"
+  },
+  {
+   "t": 16.64,
+   "source": "agent",
+   "id": "sevt_01SfNoTXRYjrVMXJRPH1zdpD",
+   "input": {
+    "command": "cd /mnt/session/uploads; python3 - <<'E'\nimport json,collections\nq=collections.Counter(); \nerrs=collections.Counter(); first={}\nreqs=collections.defaultdict(int)\nfor l in open('app.log'):\n    try:d=json.loads(l)\n    except: continue\n    if d['service']!='checkout': continue\n    m=d['msg']\n    if 'db_query' in m and 'order_items' in m:\n        q[d['ts'][:16]]+=1; reqs[d.get('request_id')]+=1\n        first.setdefault('q',d['ts'])\n    if d['level'] in('ERROR','WARN') and 'GC' not in m:\n        k=m[:90]; errs[k]+=1; first.setdefault(k,d['ts'])\nprint(first.get('q')); \nprint(sorted(q.items())[:3], sorted(q.items())[-2:])\nv=sorted(reqs.values()); print(len(v), v[0], v[len(v)//2], v[-1])\nfor k,c in ... [790 chars]"
+   },
+   "name": "bash",
+   "processed_at": "2026-10-14T19:32:55.449539Z",
+   "type": "agent.tool_use",
+   "evaluated_permission": "allow",
+   "evaluation": {
+    "type": "always_allow"
+   },
+   "session_thread_id": null
+  },
+  {
+   "t": 16.64,
+   "source": "agent",
+   "id": "sevt_01BhpJzUEKhtynUjU5Uoa8e5",
+   "is_error": false,
+   "model_request_start_id": "sevt_019k68g3zfPr2fD9ne6qx7fs",
+   "model_usage": {
+    "cache_creation_input_tokens": 4863,
+    "cache_read_input_tokens": 12660,
+    "input_tokens": 2,
+    "output_tokens": 468,
+    "speed": null
+   },
+   "processed_at": "2026-10-14T19:32:55.449540Z",
+   "type": "span.model_request_end"
+  },
+  {
+   "t": 17.45,
+   "source": "agent",
+   "id": "sevt_01Y6UQBWDtCfEX61BhyKfJr9",
+   "processed_at": "2026-10-14T19:32:56.190450Z",
+   "tool_use_id": "sevt_01SfNoTXRYjrVMXJRPH1zdpD",
+   "type": "agent.tool_result",
+   "content": [
+    {
+     "text": "2026-04-22T14:31:18.144Z\n[('2026-04-22T14:31', 606), ('2026-04-22T14:32', 1112), ('2026-04-22T14:33', 1261)] [('2026-04-22T14:58', 1069), ('2026-04-22T14:59', 1108)]\n2586 8 12 16\n640 2026-04-22T14:40:04.984Z DB connection pool exhausted (active=50/50, waiters=12)\n222 2026-04-22T14:40:10.681Z request_end status=500 path=/api/checkout/submit error=PoolTimeout\n214 2026-04-22T14:40:04.987Z request_end status=500 path=/api/checkout/validate error=PoolTimeout\n204 2026-04-22T14:40:11.202Z request_end status=500 path=/api/checkout/summary error=PoolTimeout\n79 2026-04-22T14:40:03.696Z db_pool high utilization active=49/50\n75 2026-04-22T14:40:30.304Z db_pool high utilization active=46/50\n{\"ts\":\"2026-0... [1358 chars]",
+     "type": "text"
+    }
+   ],
+   "is_error": false
+  },
+  {
+   "t": 17.46,
+   "source": "agent",
+   "id": "sevt_01WSEHTsJmSjoRm3SrSrpcev",
+   "processed_at": "2026-10-14T19:32:56.228385Z",
+   "type": "span.model_request_start"
+  },
+  {
+   "t": 23.25,
+   "source": "agent",
+   "id": "sevt_01AUMW88tPQjk2tdna2syFuq",
+   "content": [
+    {
+     "text": "**Cause:** the checkout deploy `a3f9c21` at 14:31:18. It turned a batched query into one query per order (an N+1), which exhausted the DB connection pool.\n\n**Evidence**\n- **Timing:** checkout deployed at 14:31:18. p99 went from about 67 ms at 14:31 to 347 ms at 14:32 and 852 ms at 14:33, then to about 3,000 ms. No other deploy lines up: cart was at 09:14, auth at 11:02, and inventory at 14:55, after the spike began.\n- **Diff:** the commit is labelled \"refactor for readability\". It replaces a single `order_id__in=[...]` query (with `select_related`) by a loop that runs `OrderItem.objects.filter(order_id=order.id)` for each open order.\n- **Log:** `SELECT * FROM order_items WHERE order_id = ?` first appears at 14:31:18.144, the moment of the deploy. There are about 31k of these in the window, roughly 1,000 per minute. Each `/summary` request issues 8\u201316 of them (median 12).\n- **Pool:** checkout `db_pool_utilization` climbs from about 0.15 to 0.34 at 14:32 and reaches 1.0 at 14:37. The log shows \"DB connection pool exhausted (active=50/50, waiters=12)\" starting at 14:40:04.\n- **Errors:** the error rate is flat until 14:40, then runs at 10\u201320%. The 500s are `PoolTimeout` on `/submit`, `/validate` and `/summary`. So `/validate` and `/submit`, which don't run the loop, fail only because `/summary` holds the pool.\n\nThe latency spike started at 14:32. The errors came about 8 minutes later, once the pool saturated.\n\n**Fix:** roll back `a3f9c21`, or restore the batched query. Inventory's 14:55 deploy happened after the spike began and isn't involved.\n\n> **Root cause:** `a3f9c21`: the order-summary refactor replaced one batched `order_items` query with a query per order (N+1), which saturated the 50-connection DB pool and caused the latency spike and later `PoolTimeout` 500s.",
+     "type": "text"
+    }
+   ],
+   "processed_at": "2026-10-14T19:33:02.128683Z",
+   "type": "agent.message"
+  },
+  {
+   "t": 23.26,
+   "source": "agent",
+   "id": "sevt_01KYMvJJiFy5SgnJbaLaAA4E",
+   "is_error": false,
+   "model_request_start_id": "sevt_01WSEHTsJmSjoRm3SrSrpcev",
+   "model_usage": {
+    "cache_creation_input_tokens": 1172,
+    "cache_read_input_tokens": 17523,
+    "input_tokens": 2,
+    "output_tokens": 736,
+    "speed": null
+   },
+   "processed_at": "2026-10-14T19:33:02.128684Z",
+   "type": "span.model_request_end"
+  },
+  {
+   "t": 23.36,
+   "source": "agent",
+   "id": "sevt_01M2wH9TqFbqodFx6PWaPTj5",
+   "agent_name": "anim-capture-5aa9ca",
+   "processed_at": "2026-10-14T19:33:02.236228Z",
+   "session_thread_id": "sthr_01NX4XF6HDqtyFpHZnpQQSc6",
+   "stop_details": null,
+   "stop_reason": {
+    "type": "end_turn"
+   },
+   "type": "session.thread_status_idle"
+  },
+  {
+   "t": 23.37,
+   "source": "agent",
+   "id": "sevt_014PCVM5cAPfVu6BqyV1vD8D",
+   "processed_at": "2026-10-14T19:33:02.236229Z",
+   "type": "session.usage",
+   "usage": {
+    "active_seconds": 21.71,
+    "cache_creation": {
+     "ephemeral_1h_input_tokens": 0,
+     "ephemeral_5m_input_tokens": 6858
+    },
+    "cache_read_input_tokens": 68186,
+    "input_tokens": 14,
+    "list_cost": {
+     "amount": "4",
+     "currency": "USD"
+    },
+    "output_tokens": 1909,
+    "server_tool_use": {
+     "web_fetch_requests": 0,
+     "web_search_requests": 0
+    }
+   },
+   "budget": null
+  },
+  {
+   "t": 23.37,
+   "source": "agent",
+   "id": "sevt_01VukW9baHYtd32nyzdPt3VP",
+   "processed_at": "2026-10-14T19:33:02.236230Z",
+   "stop_details": null,
+   "stop_reason": {
+    "type": "end_turn"
+   },
+   "type": "session.status_idle"
+  }
+ ]
+}

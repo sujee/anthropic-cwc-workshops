@@ -1,0 +1,430 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Incident-2277 Replay</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap">
+<style>
+  /* Layout concept: a control-room replay. One diagram of the two sides (your machine, Anthropic's cloud),
+     one event log, and a scrubber that drives both from a single clock. */
+  :root {
+    --bg: #EDF1F3; --surface: #FFFFFF; --fg: #14202B; --muted: #52667A; --line: #C7D2DA;
+    --you: #0B7A6B; --you-bg: #E1F2EF; --cloud: #4A4FC4; --cloud-bg: #E8E9FA;
+    --wait: #9A5B00; --wait-bg: #FBF0DC; --done: #1F7A3D;
+    --display: "IBM Plex Sans", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0E151B; --surface: #16212A; --fg: #E5EDF2; --muted: #93A4B2; --line: #2B3A46;
+      --you: #4FD1BD; --you-bg: #123230; --cloud: #A0A5FF; --cloud-bg: #1B1F44;
+      --wait: #E0A44A; --wait-bg: #33260F; --done: #6FD08C; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0E151B; --surface: #16212A; --fg: #E5EDF2; --muted: #93A4B2; --line: #2B3A46;
+    --you: #4FD1BD; --you-bg: #123230; --cloud: #A0A5FF; --cloud-bg: #1B1F44;
+    --wait: #E0A44A; --wait-bg: #33260F; --done: #6FD08C; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg); font: 16px/1.5 var(--display);
+    padding-block: 28px 56px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  main { max-width: 1180px; margin-inline: auto; display: flex; flex-direction: column; gap: 22px; }
+  h1 { font: 700 clamp(1.6rem, 3.6vw, 2.3rem)/1.12 var(--display); letter-spacing: -0.015em; margin: 0 0 8px; text-wrap: balance; }
+  h2 { font: 600 1.05rem/1.3 var(--display); margin: 0 0 8px; }
+  p { margin: 0; }
+  code, .mono { font-family: var(--mono); font-size: 0.86em; }
+  header p { max-width: 70ch; color: var(--muted); }
+  .eyebrow { font: 500 0.74rem var(--mono); letter-spacing: .09em; text-transform: uppercase; color: var(--you); margin-bottom: 8px; }
+
+  .controls { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  button, select { font: 500 0.95rem var(--display); color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; cursor: pointer; }
+  button.primary { background: var(--you); color: var(--surface); border-color: var(--you); font-weight: 600; min-width: 130px; }
+  button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--cloud); outline-offset: 2px; }
+  .scrub { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  .track { position: relative; height: 14px; }
+  .track i { position: absolute; top: 3px; width: 3px; height: 8px; border-radius: 2px; background: var(--cloud); opacity: .75; }
+  .track i.you { background: var(--you); }
+  input[type=range] { width: 100%; margin: 0; accent-color: var(--you); }
+  .clock { font: 600 1.05rem var(--mono); font-variant-numeric: tabular-nums; min-width: 8.5ch; text-align: right; }
+
+  .stage { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+  @media (max-width: 880px) { .stage { grid-template-columns: minmax(0, 1fr); } }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+  .scroll { overflow-x: auto; }
+  svg { display: block; width: 100%; min-width: 640px; height: auto; }
+  .narr { padding: 12px 14px; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: baseline; min-height: 3.6em; }
+  .narr b { font: 600 0.74rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); flex: none; }
+  .meters { display: flex; flex-wrap: wrap; gap: 6px 22px; padding: 10px 14px; border-top: 1px solid var(--line); font: 400 0.82rem var(--mono); color: var(--muted); }
+  .meters span b { color: var(--fg); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .logwrap { display: flex; flex-direction: column; max-height: 560px; }
+  .logwrap h2 { padding: 12px 14px 4px; }
+  #log { position: relative; list-style: none; margin: 0; padding: 6px 8px 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; }
+  #log li { position: relative; display: grid; grid-template-columns: 4.2ch 1fr; gap: 8px; font-size: 0.86rem;
+            padding: 5px 8px 5px 22px; border: 1px solid transparent; border-radius: 6px; }
+  #log li.cur { background: var(--cloud-bg); border-color: var(--cloud); }
+  #log li.cur::before { content: "\25B6"; position: absolute; left: 6px; top: 7px; font-size: 0.7rem; color: var(--cloud); }
+  #log time { font: 400 0.78rem var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; padding-top: 2px; }
+  .chip { display: inline-block; font: 500 0.72rem var(--mono); padding: 0 6px; border-radius: 4px; border: 1px solid; margin-right: 6px; white-space: nowrap; }
+  .chip.you { color: var(--you); background: var(--you-bg); border-color: var(--you); }
+  .chip.cloud { color: var(--cloud); background: var(--cloud-bg); border-color: var(--cloud); }
+  .chip.wait { color: var(--wait); background: var(--wait-bg); border-color: var(--wait); }
+  .chip.done { color: var(--done); border-color: var(--done); }
+  #log .d { color: var(--muted); display: block; font: 400 0.76rem var(--mono); overflow-wrap: anywhere; margin-top: 1px; }
+
+  .answer { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+  .answer .body { display: flex; flex-direction: column; gap: 8px; max-width: 80ch; font-size: 0.95rem; }
+  .answer ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; }
+  .answer blockquote { margin: 0; border-left: 3px solid var(--you); padding: 4px 0 4px 12px; background: var(--you-bg); }
+  .answer .pending { color: var(--muted); }
+  .notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .notes .panel { padding: 14px 16px; }
+  .notes p { color: var(--muted); font-size: 0.93rem; }
+  .src { font: 400 0.8rem var(--mono); color: var(--muted); }
+
+  /* diagram parts */
+  .zone-you { fill: var(--you-bg); stroke: var(--you); stroke-width: 1.2; stroke-dasharray: 5 4; opacity: .6; }
+  .zone-cloud { fill: var(--cloud-bg); stroke: var(--cloud); stroke-width: 1.2; stroke-dasharray: 5 4; opacity: .6; }
+  .bx { fill: var(--surface); stroke: var(--line); stroke-width: 1.4; transition: fill .15s, stroke .15s; }
+  .bx.you { stroke: var(--you); } .bx.cloud { stroke: var(--cloud); }
+  .bx.on.you { fill: var(--you-bg); stroke-width: 2.6; } .bx.on.cloud { fill: var(--cloud-bg); stroke-width: 2.6; }
+  .bx.on.wait { fill: var(--wait-bg); stroke: var(--wait); stroke-width: 2.6; }
+  .t { font: 600 13.5px var(--display); fill: var(--fg); }
+  .s { font: 400 12px var(--display); fill: var(--muted); }
+  .m { font: 400 11px var(--mono); fill: var(--fg); }
+  .mm { font: 400 11px var(--mono); fill: var(--muted); }
+  .zl { font: 500 11px var(--mono); letter-spacing: .08em; fill: var(--you); }
+  .zc { font: 500 11px var(--mono); letter-spacing: .08em; fill: var(--cloud); }
+  .chipbox { fill: var(--cloud-bg); stroke: var(--cloud); stroke-width: 1; }
+  .arrow { stroke-width: 1.8; fill: none; stroke-dasharray: 4 4; opacity: .55; }
+  .arrow.you { stroke: var(--you); } .arrow.cloud { stroke: var(--cloud); }
+  .pk rect { stroke-width: 1.4; } .pk text { font: 600 10.5px var(--mono); text-anchor: middle; dominant-baseline: central; }
+  .pk.you rect { fill: var(--you); stroke: var(--you); } .pk.you text { fill: var(--surface); }
+  .pk.cloud rect { fill: var(--cloud); stroke: var(--cloud); } .pk.cloud text { fill: var(--surface); }
+  .pk.done rect { fill: var(--done); stroke: var(--done); } .pk.done text { fill: var(--surface); }
+  @media (prefers-reduced-motion: reduce) { .bx { transition: none; } }
+</style>
+
+<main>
+  <header>
+    <div class="eyebrow">Incident-2277 · a real run, replayed</div>
+    <h1 id="headline">An agent finds the cause of an outage</h1>
+    <p>One question went to the SRE agent. Press play to watch every event of that run cross between your machine and Anthropic's cloud. The events are from a real session, not a mock-up.</p>
+  </header>
+
+  <section class="controls" aria-label="Replay controls">
+    <button class="primary" id="play" type="button">Replay the run</button>
+    <button id="restart" type="button">Back to start</button>
+    <label>Speed <select id="speed">
+      <option value="0.5">0.5x</option><option value="1" selected>1x</option><option value="2">2x</option><option value="4">4x</option>
+    </select></label>
+    <div class="scrub">
+      <div class="track" id="marks" aria-hidden="true"></div>
+      <input type="range" id="scrub" min="0" max="1000" value="1000" aria-label="Position in the run">
+    </div>
+    <div class="clock" id="clock">0.0 s</div>
+  </section>
+
+  <div class="stage">
+    <section class="panel" aria-label="Diagram of the run">
+      <div class="scroll">
+        <svg viewBox="0 0 960 470" role="img" aria-label="Your machine on the left runs stream_reply and handle_tool. Anthropic's cloud on the right holds the agent and its sandbox. Labelled events travel between them as the run plays.">
+          <rect class="zone-you" x="16" y="36" width="300" height="420" rx="8"/>
+          <text class="zl" x="32" y="60">YOUR MACHINE</text>
+          <rect class="zone-cloud" x="420" y="36" width="524" height="420" rx="8"/>
+          <text class="zc" x="436" y="60">ANTHROPIC · ONE SESSION</text>
+
+          <rect class="bx you" id="b-stream" x="36" y="80" width="260" height="92" rx="6"/>
+          <text class="t" x="50" y="104">stream_reply()</text>
+          <text class="s" x="50" y="124">sends the question, answers tool calls</text>
+          <text class="mm" id="t-stream" x="50" y="148"></text>
+
+          <rect class="bx you" id="b-handle" x="36" y="212" width="260" height="130" rx="6"/>
+          <text class="t" x="50" y="236">handle_tool()</text>
+          <text class="s" x="50" y="256">your code, your data, your credentials</text>
+          <text class="mm" id="t-handle1" x="50" y="286"></text>
+          <text class="mm" id="t-handle2" x="50" y="304"></text>
+          <text class="mm" id="t-handle3" x="50" y="322"></text>
+
+          <rect class="bx" x="36" y="372" width="260" height="62" rx="6"/>
+          <text class="t" x="50" y="396">data/*.json · diff.txt</text>
+          <text class="s" x="50" y="416">swap for a Datadog client in production</text>
+          <line class="arrow you" x1="166" y1="172" x2="166" y2="212"/>
+          <line class="arrow you" x1="166" y1="342" x2="166" y2="372"/>
+
+          <line class="arrow you" x1="296" y1="112" x2="440" y2="112"/>
+          <line class="arrow you" x1="296" y1="134" x2="440" y2="134"/>
+          <line class="arrow cloud" x1="440" y1="156" x2="296" y2="156"/>
+
+          <rect class="bx cloud" id="b-agent" x="444" y="80" width="476" height="120" rx="6"/>
+          <text class="t" x="460" y="104">Agent</text>
+          <text class="s" x="460" y="124" id="t-model">model + system prompt + runbook skill</text>
+          <text class="m" id="t-agent" x="460" y="156"></text>
+          <text class="mm" id="t-agent2" x="460" y="178"></text>
+
+          <line class="arrow cloud" x1="640" y1="200" x2="640" y2="270"/>
+          <line class="arrow cloud" x1="760" y1="270" x2="760" y2="200"/>
+
+          <rect class="bx cloud" id="b-sbx" x="444" y="270" width="476" height="164" rx="6"/>
+          <text class="t" x="460" y="294">Sandbox · a fresh cloud container</text>
+          <rect class="chipbox" x="460" y="306" width="46" height="22" rx="4"/><text class="m" x="468" y="321">read</text>
+          <rect class="chipbox" x="514" y="306" width="46" height="22" rx="4"/><text class="m" x="522" y="321">bash</text>
+          <rect class="chipbox" x="568" y="306" width="256" height="22" rx="4"/><text class="m" x="576" y="321">app.log · mounted, never pasted</text>
+          <text class="m" id="t-sbx1" x="460" y="358"></text>
+          <text class="mm" id="t-sbx2" x="460" y="378"></text>
+          <text class="mm" id="t-sbx3" x="460" y="398"></text>
+          <text class="mm" id="t-sbx4" x="460" y="418"></text>
+
+          <g id="packets"></g>
+        </svg>
+      </div>
+      <div class="narr"><b>Now</b><span id="narr"></span></div>
+      <div class="meters" id="meters"></div>
+    </section>
+
+    <section class="panel logwrap" aria-label="Event log">
+      <h2>Events, as they arrive</h2>
+      <ol id="log"></ol>
+    </section>
+  </div>
+
+  <section class="panel answer" id="answer" aria-live="polite">
+    <h2>What the agent concluded</h2>
+    <div class="body" id="answer-body"></div>
+  </section>
+
+  <section class="notes" aria-label="What to notice">
+    <div class="panel"><h2>It read the runbook first</h2><p>The first thing the agent did was read <code>SKILL.md</code> in its sandbox. The skill steered the order: deploys, then metrics, then the diff, and the log last.</p></div>
+    <div class="panel"><h2>It paused and waited for you</h2><p>Every call to <code>get_metrics</code>, <code>get_recent_deploys</code> or <code>get_diff</code> stopped the agent (status idle, reason requires_action) until your <code>handle_tool()</code> replied.</p></div>
+    <div class="panel"><h2>The log never reached the model</h2><p>The log has about 70,000 lines. The agent searched it with two <code>bash</code> calls inside the sandbox, and only their output came back.</p></div>
+  </section>
+  <p class="src" id="src"></p>
+</main>
+
+<script id="data" type="application/json">{"question": "checkout p99 spiked ~14:32 UTC. What caused it?", "model": "claude-sonnet-5-5", "duration": 23.37, "events": [{"t": 0.0, "k": "q", "text": "checkout p99 spiked ~14:32 UTC. What caused it?"}, {"t": 0.89, "k": "status", "state": "run"}, {"t": 0.94, "k": "span_start"}, {"t": 1.95, "k": "tool", "id": "sevt_01RofpyqLwgnoNHpUNmqBYii", "name": "read", "arg": "/workspace/skills/incident-triage-runbook/SKILL.md"}, {"t": 1.95, "k": "span_end"}, {"t": 3.92, "k": "toolres", "ref": "sevt_01RofpyqLwgnoNHpUNmqBYii", "text": "1\t---\n2\tname: incident-triage-runbook\n3\tdescription: The SRE team's runbook for triaging production latency and error-rate incidents. Use this whenever investigating an incident, a latency spike, elevated error rates, or when asked \"what caused X\" about a production service.\n4\t---\n5\t\n6\t# Incident tr"}, {"t": 3.92, "k": "span_start"}, {"t": 5.48, "k": "ctool", "id": "sevt_014tjLNzLC5KW8G1CrsTK3u7", "name": "get_recent_deploys", "arg": ""}, {"t": 5.8, "k": "cres", "ref": "sevt_014tjLNzLC5KW8G1CrsTK3u7", "text": "[\n  {\n    \"ts\": \"2026-04-22T09:14:05Z\",\n    \"service\": \"cart\",\n    \"commit\": \"e21b6c9\",\n    \"author\": \"dave@shop.io\",\n    \"status\": \"success\",\n    \"summary\": \"bump lodash to 4.17.22\"\n  },\n  {\n    \"ts\": \"2026-04-22T11:02:33Z\",\n    \"service\": \"auth\",\n    \"commit\": \"9f1e2d4\",\n    \"author\": \"bob@shop.io", "chars": 804}, {"t": 5.8, "k": "ctool", "id": "sevt_011i58GmqhXWWHX6up2RDqT8", "name": "get_metrics", "arg": "p99_latency_ms, checkout"}, {"t": 6.29, "k": "cres", "ref": "sevt_011i58GmqhXWWHX6up2RDqT8", "text": "[{\"ts\": \"2026-04-22T14:00:00Z\", \"value\": 62.448}, {\"ts\": \"2026-04-22T14:01:00Z\", \"value\": 58.47}, {\"ts\": \"2026-04-22T14:02:00Z\", \"value\": 69.971}, {\"ts\": \"2026-04-22T14:03:00Z\", \"value\": 56.666}, {\"ts\": \"2026-04-22T14:04:00Z\", \"value\": 67.325}, {\"ts\": \"2026-04-22T14:05:00Z\", \"value\": 63.411}, {\"ts\":", "chars": 3037}, {"t": 6.29, "k": "ctool", "id": "sevt_01DEnYupjLreZomaLD8rHtqf", "name": "get_metrics", "arg": "error_rate, checkout"}, {"t": 6.62, "k": "cres", "ref": "sevt_01DEnYupjLreZomaLD8rHtqf", "text": "[{\"ts\": \"2026-04-22T14:00:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:01:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:02:00Z\", \"value\": 0.002}, {\"ts\": \"2026-04-22T14:03:00Z\", \"value\": 0.001}, {\"ts\": \"2026-04-22T14:04:00Z\", \"value\": 0.001}, {\"ts\": \"2026-04-22T14:05:00Z\", \"value\": 0.001}, {\"ts\": \"202", "chars": 2902}, {"t": 6.62, "k": "span_end"}, {"t": 6.62, "k": "usage", "out": 251, "cache": 14329, "inp": 6, "active": 4.703}, {"t": 6.63, "k": "status", "state": "wait"}, {"t": 6.63, "k": "usage", "out": 251, "cache": 14329, "inp": 6, "active": 4.929}, {"t": 6.63, "k": "status", "state": "wait"}, {"t": 6.63, "k": "usage", "out": 251, "cache": 14329, "inp": 6, "active": 5.142}, {"t": 6.63, "k": "status", "state": "wait"}, {"t": 6.72, "k": "status", "state": "run"}, {"t": 6.77, "k": "span_start"}, {"t": 8.2, "k": "msg", "text": "Checkout deploy at 14:31:18 lines up with p99 moving at 14:32 (67ms → 347ms → 852ms at 14:33). Pulling the diff."}, {"t": 8.2, "k": "ctool", "id": "sevt_01MrKkggZvdpoiRyunzkPdoU", "name": "get_diff", "arg": "a3f9c21"}, {"t": 8.55, "k": "cres", "ref": "sevt_01MrKkggZvdpoiRyunzkPdoU", "text": "commit a3f9c21e8b4d2f1a9c0e7d3b5f8a2c4e6d9b1f0a\nAuthor: Alice Chen <alice@shop.io>\nDate:   Wed Apr 22 14:29:51 2026 +0000\n\n    refactor order summary builder for readability\n\n    The old list comprehension was getting hard to follow. Split it into\n    an explicit loop so the per-order enrichment log", "chars": 1755}, {"t": 8.55, "k": "span_end"}, {"t": 8.55, "k": "usage", "out": 364, "cache": 26166, "inp": 8, "active": 6.86}, {"t": 8.55, "k": "status", "state": "wait"}, {"t": 8.61, "k": "status", "state": "run"}, {"t": 8.65, "k": "span_start"}, {"t": 10.19, "k": "think"}, {"t": 11.44, "k": "msg", "text": "The diff swaps one batched query for a query per order. Next I'll check the log, and look at why errors only start at 14:40."}, {"t": 11.44, "k": "tool", "id": "sevt_015CZvsrf7b7X65h2coGiZNN", "name": "bash", "arg": "cd /mnt/session/uploads; wc -l app.log; head -3 app.log; grep -c 'FROM order_items WHERE order_id = ' app.log; grep -E '14:3[0-3]' app.log | head -15; echo ---; grep -E 'ERROR|WARN' app.log | awk '{print $0}' | cut -c1-220 | sed -n '1,15p'"}, {"t": 11.44, "k": "ctool", "id": "sevt_01XFj4hieG65S3wB5m8j7GQT", "name": "get_metrics", "arg": "db_pool_utilization, checkout"}, {"t": 11.78, "k": "cres", "ref": "sevt_01XFj4hieG65S3wB5m8j7GQT", "text": "[{\"ts\": \"2026-04-22T14:00:00Z\", \"value\": 0.103}, {\"ts\": \"2026-04-22T14:01:00Z\", \"value\": 0.214}, {\"ts\": \"2026-04-22T14:02:00Z\", \"value\": 0.163}, {\"ts\": \"2026-04-22T14:03:00Z\", \"value\": 0.118}, {\"ts\": \"2026-04-22T14:04:00Z\", \"value\": 0.165}, {\"ts\": \"2026-04-22T14:05:00Z\", \"value\": 0.103}, {\"ts\": \"202", "chars": 2877}, {"t": 11.78, "k": "span_end"}, {"t": 11.78, "k": "usage", "out": 705, "cache": 38003, "inp": 10, "active": 9.938}, {"t": 11.78, "k": "status", "state": "wait"}, {"t": 11.78, "k": "status", "state": "run"}, {"t": 12.75, "k": "toolres", "ref": "sevt_015CZvsrf7b7X65h2coGiZNN", "text": "69740 app.log\n{\"ts\":\"2026-04-22T14:00:00.000Z\",\"level\":\"DEBUG\",\"service\":\"checkout\",\"host\":\"checkout-1\",\"msg\":\"healthcheck OK\",\"uptime_s\":74788}\n{\"ts\":\"2026-04-22T14:00:00.000Z\",\"level\":\"DEBUG\",\"service\":\"cart\",\"host\":\"cart-2\",\"msg\":\"healthcheck OK\",\"uptime_s\":81985}\n{\"ts\":\"2026-04-22T14:00:00.000Z\""}, {"t": 12.77, "k": "span_start"}, {"t": 16.64, "k": "msg", "text": "Now to confirm in the log: query counts per request before and after the deploy, and the error type at 14:40."}, {"t": 16.64, "k": "tool", "id": "sevt_01SfNoTXRYjrVMXJRPH1zdpD", "name": "bash", "arg": "cd /mnt/session/uploads; python3 - <<'E'\nimport json,collections\nq=collections.Counter(); \nerrs=collections.Counter(); first={}\nreqs=collections.defaultdict(int)\nfor l in open('app.log'):\n    try:d=json.loads(l)\n    except: continue\n    if d['service']!='checkout': continue\n    m=d['msg']\n    if 'db_query' in m and 'order_items' in m:\n        q[d['ts'][:16]]+=1; reqs[d.get('request_id')]+=1\n        first.setdefault('q',d['ts'])\n    if d['level'] in('ERROR','WARN') and 'GC' not in m:\n        k=m[:90]; errs[k]+=1; first.setdefault(k,d['ts'])\nprint(first.get('q')); \nprint(sorted(q.items())[:3], sorted(q.items())[-2:])\nv=sorted(reqs.values()); print(len(v), v[0], v[len(v)//2], v[-1])\nfor k,c in ... [790 chars]"}, {"t": 16.64, "k": "span_end"}, {"t": 17.45, "k": "toolres", "ref": "sevt_01SfNoTXRYjrVMXJRPH1zdpD", "text": "2026-04-22T14:31:18.144Z\n[('2026-04-22T14:31', 606), ('2026-04-22T14:32', 1112), ('2026-04-22T14:33', 1261)] [('2026-04-22T14:58', 1069), ('2026-04-22T14:59', 1108)]\n2586 8 12 16\n640 2026-04-22T14:40:04.984Z DB connection pool exhausted (active=50/50, waiters=12)\n222 2026-04-22T14:40:10.681Z request"}, {"t": 17.46, "k": "span_start"}, {"t": 23.25, "k": "msg", "text": "**Cause:** the checkout deploy `a3f9c21` at 14:31:18. It turned a batched query into one query per order (an N+1), which exhausted the DB connection pool.\n\n**Evidence**\n- **Timing:** checkout deployed at 14:31:18. p99 went from about 67 ms at 14:31 to 347 ms at 14:32 and 852 ms at 14:33, then to about 3,000 ms. No other deploy lines up: cart was at 09:14, auth at 11:02, and inventory at 14:55, after the spike began.\n- **Diff:** the commit is labelled \"refactor for readability\". It replaces a single `order_id__in=[...]` query (with `select_related`) by a loop that runs `OrderItem.objects.filter(order_id=order.id)` for each open order.\n- **Log:** `SELECT * FROM order_items WHERE order_id = ?` first appears at 14:31:18.144, the moment of the deploy. There are about 31k of these in the window, roughly 1,000 per minute. Each `/summary` request issues 8–16 of them (median 12).\n- **Pool:** checkout `db_pool_utilization` climbs from about 0.15 to 0.34 at 14:32 and reaches 1.0 at 14:37. The log shows \"DB connection pool exhausted (active=50/50, waiters=12)\" starting at 14:40:04.\n- **Errors:** the error rate is flat until 14:40, then runs at 10–20%. The 500s are `PoolTimeout` on `/submit`, `/validate` and `/summary`. So `/validate` and `/submit`, which don't run the loop, fail only because `/summary` holds the pool.\n\nThe latency spike started at 14:32. The errors came about 8 minutes later, once the pool saturated.\n\n**Fix:** roll back `a3f9c21`, or restore the batched query. Inventory's 14:55 deploy happened after the spike began and isn't involved.\n\n> **Root cause:** `a3f9c21`: the order-summary refactor replaced one batched `order_items` query with a query per order (N+1), which saturated the 50-connection DB pool and caused the latency spike and later `PoolTimeout` 500s.", "final": true}, {"t": 23.26, "k": "span_end"}, {"t": 23.37, "k": "usage", "out": 1909, "cache": 68186, "inp": 14, "active": 21.71}, {"t": 23.37, "k": "status", "state": "done"}]}</script>
+<script>
+(function () {
+  var D = JSON.parse(document.getElementById('data').textContent);
+  var EV = D.events, PKT = 0.8, END = D.duration + PKT + 0.2;
+  var NS = 'http://www.w3.org/2000/svg';
+  function $(id) { return document.getElementById(id); }
+  function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+  function cut(s, n) { s = String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+
+  // ---- index the run -------------------------------------------------------
+  var byId = {};
+  EV.forEach(function (e) { if (e.id) byId[e.id] = e; });
+  EV.forEach(function (e) {
+    if (e.k === 'toolres' && byId[e.ref]) byId[e.ref].end = e.t;
+    if (e.k === 'cres' && byId[e.ref]) { byId[e.ref].end = e.t; byId[e.ref].res = e; }
+  });
+  var spans = [], open = null;
+  EV.forEach(function (e) {
+    if (e.k === 'span_start') open = e.t;
+    if (e.k === 'span_end' && open != null) { spans.push([open, e.t]); open = null; }
+  });
+  var statuses = EV.filter(function (e) { return e.k === 'status'; });
+  var usages = EV.filter(function (e) { return e.k === 'usage'; });
+  var finalMsg = EV.filter(function (e) { return e.k === 'msg'; }).pop();
+
+  // ---- geometry: where each kind of event travels ----------------------------
+  var PATH = {
+    q:    { pts: [[296, 112], [440, 112]], cls: 'you',   label: 'user.message' },
+    cres: { pts: [[296, 134], [440, 134]], cls: 'you',   label: 'tool_result' },
+    ctool:{ pts: [[440, 156], [296, 156]], cls: 'cloud', label: null },
+    msg:  { pts: [[440, 156], [296, 156]], cls: 'done',  label: 'agent.message' },
+    tool: { pts: [[640, 200], [640, 270]], cls: 'cloud', label: null },
+    toolres: { pts: [[760, 270], [760, 200]], cls: 'cloud', label: 'result' }
+  };
+  var pk = {};
+  var gp = $('packets');
+  EV.forEach(function (e, i) {
+    var p = PATH[e.k]; if (!p) return;
+    var label = p.label || e.name;
+    var g = document.createElementNS(NS, 'g'); g.setAttribute('class', 'pk ' + p.cls); g.style.display = 'none';
+    var w = label.length * 6.7 + 16;
+    var r = document.createElementNS(NS, 'rect'); r.setAttribute('x', -w / 2); r.setAttribute('y', -9); r.setAttribute('width', w); r.setAttribute('height', 18); r.setAttribute('rx', 9);
+    var t = document.createElementNS(NS, 'text'); t.textContent = label;
+    g.appendChild(r); g.appendChild(t); gp.appendChild(g); pk[i] = g;
+  });
+
+  // ---- the log -----------------------------------------------------------------
+  function describe(e) {
+    switch (e.k) {
+      case 'q': return { chip: 'you', c: 'you', text: 'asks the agent', d: e.text };
+      case 'tool': return { chip: 'agent', c: 'cloud', text: 'runs ' + e.name + ' in the sandbox', d: cut(e.arg, 150) };
+      case 'toolres': return { chip: 'sandbox', c: 'cloud', text: 'returns the result', d: cut(e.text, 150) };
+      case 'ctool': return { chip: 'agent', c: 'wait', text: 'needs your data: ' + e.name + '(' + cut(e.arg, 60) + ')', d: 'now waiting for you' };
+      case 'cres': return { chip: 'you', c: 'you', text: 'handle_tool() answers (' + e.chars.toLocaleString() + ' chars)', d: cut(e.text, 110) };
+      case 'think': return { chip: 'agent', c: 'cloud', text: 'is reasoning', d: '' };
+      case 'msg': return { chip: 'agent', c: 'cloud', text: e.final ? 'gives its answer' : 'says', d: e.final ? '' : cut(e.text, 170) };
+    }
+    return null;
+  }
+  var SHOW = { q: 1, tool: 1, toolres: 1, ctool: 1, cres: 1, think: 1, msg: 1 };
+  var logEl = $('log'), logItems = [], lastCur = null, firstRender = true;
+  EV.forEach(function (e) {
+    if (!SHOW[e.k]) return;
+    var d = describe(e); if (!d) return;
+    var li = document.createElement('li'); li.hidden = true;
+    li.innerHTML = '<time>' + e.t.toFixed(1) + '</time><div><span class="chip ' + d.c + '">' + d.chip + '</span>' + esc(d.text) + (d.d ? '<span class="d">' + esc(d.d) + '</span>' : '') + '</div>';
+    logEl.appendChild(li); logItems.push({ t: e.t, el: li });
+  });
+  var endLi = document.createElement('li'); endLi.hidden = true;
+  endLi.innerHTML = '<time>' + D.duration.toFixed(1) + '</time><div><span class="chip done">session</span>idle, stop_reason end_turn: the turn is done</div>';
+  logEl.appendChild(endLi); logItems.push({ t: D.duration, el: endLi });
+
+  // marks on the scrubber
+  var marks = $('marks');
+  EV.forEach(function (e) {
+    if (!(e.k === 'q' || e.k === 'tool' || e.k === 'ctool' || e.k === 'cres' || e.k === 'msg')) return;
+    var i = document.createElement('i'); i.style.left = (e.t / END * 100) + '%';
+    if (e.k === 'q' || e.k === 'cres') i.className = 'you';
+    marks.appendChild(i);
+  });
+
+  // ---- the answer card ---------------------------------------------------------------
+  function md(text) {
+    var out = [], list = false;
+    String(text).split('\n').forEach(function (line) {
+      var s = esc(line).replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>').replace(/`([^`]+)`/g, '<code>$1</code>');
+      if (/^- /.test(line)) { if (!list) { out.push('<ul>'); list = true; } out.push('<li>' + s.slice(2) + '</li>'); return; }
+      if (list) { out.push('</ul>'); list = false; }
+      if (/^&gt; /.test(s)) out.push('<blockquote>' + s.slice(5) + '</blockquote>');
+      else if (s.trim()) out.push('<p>' + s + '</p>');
+    });
+    if (list) out.push('</ul>');
+    return out.join('');
+  }
+  var answerHTML = finalMsg ? md(finalMsg.text) : '';
+  var pendingHTML = '<p class="pending">The agent has not answered yet. Press play, or drag the slider to the end.</p>';
+
+  // ---- header facts --------------------------------------------------------------------
+  var nSbx = EV.filter(function (e) { return e.k === 'tool'; }).length;
+  var nCus = EV.filter(function (e) { return e.k === 'ctool'; }).length;
+  $('headline').textContent = 'An agent finds the cause of an outage in ' + Math.round(D.duration) + ' seconds';
+  $('src').textContent = 'Replay of one session: ' + EV.length + ' raw events, ' + nSbx + ' sandbox tool calls, ' + nCus + ' calls to your tools. Model ' + D.model + '. Recorded with capture-events.py. Question asked: "' + D.question + '"';
+
+  // ---- state at time t -----------------------------------------------------------------------
+  function lastBefore(arr, t) { var r = null; for (var i = 0; i < arr.length; i++) { if (arr[i].t <= t) r = arr[i]; else break; } return r; }
+  function inWindow(t, a, b) { return t >= a && t <= b; }
+  var narrDefault = 'Press play to watch the run.';
+
+  function render(t) {
+    $('clock').textContent = Math.min(t, D.duration).toFixed(1) + ' s';
+    $('scrub').value = Math.round(t / END * 1000);
+
+    // log
+    var lastShown = null;
+    logItems.forEach(function (it) { var on = it.t <= t; it.el.hidden = !on; if (on) lastShown = it; });
+    logItems.forEach(function (it) { it.el.classList.toggle('cur', it === lastShown); });
+    // Follow the current event only when it changes, and only as far as needed to keep it in view.
+    // Between changes the log is the reader's to scroll.
+    if (lastShown !== lastCur) {
+      lastCur = lastShown;
+      if (!lastShown) { logEl.scrollTop = 0; }
+      else if (!firstRender) {
+        var el = lastShown.el, top = el.offsetTop, bottom = top + el.offsetHeight;
+        if (bottom > logEl.scrollTop + logEl.clientHeight) logEl.scrollTop = bottom - logEl.clientHeight + 8;
+        else if (top < logEl.scrollTop) logEl.scrollTop = Math.max(0, top - 8);
+      }
+    }
+
+    // packets
+    EV.forEach(function (e, i) {
+      var g = pk[i]; if (!g) return;
+      var p = (t - e.t) / PKT;
+      if (p < 0 || p >= 1) { g.style.display = 'none'; return; }
+      var a = PATH[e.k].pts[0], b = PATH[e.k].pts[1];
+      var x = a[0] + (b[0] - a[0]) * p, y = a[1] + (b[1] - a[1]) * p;
+      g.setAttribute('transform', 'translate(' + x + ' ' + y + ')'); g.style.display = '';
+    });
+
+    // who is active
+    var sbxActive = false, handleActive = false, lastTool = null, lastCus = null, lastCusDone = true;
+    EV.forEach(function (e) {
+      if (e.k === 'tool' && e.t <= t) { lastTool = e; if (e.end != null && t >= e.end + 0.3) { } if (inWindow(t, e.t, (e.end || e.t) + 0.4)) sbxActive = true; }
+      if (e.k === 'ctool' && e.t <= t) { lastCus = e; if (inWindow(t, e.t, (e.end || e.t) + 0.5)) handleActive = true; }
+    });
+    var spanOn = spans.some(function (s) { return inWindow(t, s[0], s[1]); });
+    var st = lastBefore(statuses, t);
+    var waiting = st && st.state === 'wait';
+    var done = st && st.state === 'done';
+    function setOn(id, on, extra) { var el = $(id); el.setAttribute('class', el.getAttribute('class').replace(/ on| wait/g, '') + (on ? ' on' : '') + (on && extra ? ' ' + extra : '')); }
+    setOn('b-sbx', sbxActive); setOn('b-handle', handleActive);
+    setOn('b-agent', spanOn || waiting, waiting && !spanOn ? 'wait' : '');
+    setOn('b-stream', t >= 0 && t < 1.6 || handleActive);
+
+    // texts
+    var q = EV[0];
+    $('t-stream').textContent = t >= q.t ? 'sent: "' + cut(D.question, 26) + '"' : '';
+    if (lastCus) {
+      $('t-handle1').textContent = (handleActive ? 'answering ' : 'last call: ') + lastCus.name + '(' + cut(lastCus.arg, 28) + ')';
+      $('t-handle2').textContent = lastCus.res && t >= lastCus.res.t ? 'sent ' + lastCus.res.chars.toLocaleString() + ' chars back' : 'reading local data…';
+      $('t-handle3').textContent = Math.max(0, EV.filter(function (e) { return e.k === 'cres' && e.t <= t; }).length) + ' of ' + nCus + ' calls answered';
+    } else { $('t-handle1').textContent = 'idle: nothing asked yet'; $('t-handle2').textContent = ''; $('t-handle3').textContent = ''; }
+    var s1 = '', s2 = '', s3 = '', s4 = '';
+    if (lastTool) {
+      s1 = lastTool.name + (sbxActive ? ' running…' : ' finished');
+      var cmd = String(lastTool.arg || ''); s2 = cut(cmd, 62); s3 = cmd.length > 62 ? cut(cmd.slice(60), 62) : ''; s4 = cmd.length > 124 ? cut(cmd.slice(122), 62) : '';
+    } else { s1 = 'not used yet'; }
+    $('t-sbx1').textContent = s1; $('t-sbx2').textContent = s2; $('t-sbx3').textContent = s3; $('t-sbx4').textContent = s4;
+    $('t-agent').textContent = done ? 'idle · end_turn: finished' : waiting ? 'idle · requires_action: waiting for you' : spanOn ? 'model working…' : t < 0.9 ? 'not started' : 'running';
+    var nTools = EV.filter(function (e) { return (e.k === 'tool' || e.k === 'ctool') && e.t <= t; }).length;
+    $('t-agent2').textContent = nTools + ' tool calls so far';
+
+    // narration
+    var last = null; EV.forEach(function (e) { if (SHOW[e.k] && e.k !== 'think' && e.t <= t) last = e; });
+    var n = narrDefault;
+    if (last) {
+      var d = describe(last);
+      n = (last.k === 'q' ? 'You ask: "' + D.question + '"' :
+        last.k === 'tool' ? 'The agent runs ' + last.name + ' inside its sandbox. ' + (last.name === 'read' ? 'It is reading the runbook skill.' : 'It searches the log where the log lives.') :
+        last.k === 'toolres' ? 'The sandbox sends the output back to the agent. Only this output counts against the context window.' :
+        last.k === 'ctool' ? 'The agent needs data only your systems have, so it calls ' + last.name + ' and waits.' :
+        last.k === 'cres' ? 'Your handle_tool() runs on your machine and replies with ' + last.chars.toLocaleString() + ' characters.' :
+        last.k === 'msg' && last.final ? 'The agent names the root cause and goes idle.' : 'The agent says: "' + cut(last.text, 140) + '"');
+    }
+    $('narr').textContent = n;
+
+    // meters
+    var u = lastBefore(usages, t);
+    $('meters').innerHTML = u
+      ? '<span>output tokens <b>' + u.out.toLocaleString() + '</b></span><span>cache-read tokens <b>' + u.cache.toLocaleString() + '</b></span><span>input tokens <b>' + u.inp + '</b></span><span>active time <b>' + u.active.toFixed(1) + ' s</b></span>'
+      : '<span>token usage appears after the first model turn</span>';
+
+    // answer
+    var showAns = finalMsg && t >= finalMsg.t;
+    $('answer-body').innerHTML = showAns ? answerHTML : pendingHTML;
+  }
+
+  // ---- clock ------------------------------------------------------------------------------------
+  var now = END, playing = false, last = 0, speed = 1;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function frame(ts) {
+    if (!playing) return;
+    now = Math.min(END, now + (ts - last) / 1000 * speed); last = ts;
+    render(now);
+    if (now >= END) { playing = false; $('play').textContent = 'Replay the run'; return; }
+    requestAnimationFrame(frame);
+  }
+  function play() {
+    if (now >= END) now = 0;
+    playing = true; $('play').textContent = 'Pause'; last = performance.now(); requestAnimationFrame(frame);
+  }
+  function pause() { playing = false; $('play').textContent = 'Resume'; }
+  $('play').addEventListener('click', function () { playing ? pause() : play(); });
+  $('restart').addEventListener('click', function () { playing = false; now = 0; $('play').textContent = 'Play'; render(0); });
+  $('speed').addEventListener('change', function (e) { speed = parseFloat(e.target.value); });
+  $('scrub').addEventListener('input', function (e) { playing = false; $('play').textContent = 'Resume'; now = e.target.value / 1000 * END; render(now); });
+
+  render(now);   // rest state: the whole run is already on screen
+  firstRender = false;
+})();
+</script>
+</body></html>
