@@ -5,3 +5,6 @@ __pycache__/
 .DS_Store
 data/app.log
 .claude/
+
+# my learning-tutor scores (personal, changes every session)
+my/progress.md
