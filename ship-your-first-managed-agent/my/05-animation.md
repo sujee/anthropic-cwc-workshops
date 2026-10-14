@@ -6,7 +6,8 @@
 
 An animated replay of one real run of the SRE agent. It shows each event travelling between my machine and Anthropic's cloud, with an event log that highlights the current event.
 
-- **The animation:** [incident-replay.html](incident-replay.html). Open it in a browser.
+- **Play it on GitHub:** [open the animation](https://htmlpreview.github.io/?https://github.com/sujee/anthropic-cwc-workshops/blob/main/ship-your-first-managed-agent/my/incident-replay.html). GitHub shows `.html` files as source, so this link uses a free viewer that renders the page.
+- **The source file:** [incident-replay.html](incident-replay.html). On GitHub this shows the code. Download it and open it in a browser to play it.
 - **Online copy:** https://claude.ai/artifact/MnkY9JX5ukWHjcpqdmnY2Q
 - **The recorded run it plays:** [run-events.json](run-events.json)
 - **Script that recorded the run:** [capture-events.py](capture-events.py)

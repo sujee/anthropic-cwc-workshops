@@ -13,7 +13,7 @@
 
 - ⭐ **My favourite: a personal AI tutor** that walks me through this example and quizzes me. Try it: [06-tutor.md](06-tutor.md)
 - [new slide deck i created](https://claude.ai/artifact/5d5nWTK4wWUzowLkvwm9N3#slide-881107b50de7)
-- A cool [animation](incident-replay.html) showing what's happening
+- A cool animation showing what's happening: [play it here](https://htmlpreview.github.io/?https://github.com/sujee/anthropic-cwc-workshops/blob/main/ship-your-first-managed-agent/my/incident-replay.html) · [online copy](https://claude.ai/artifact/MnkY9JX5ukWHjcpqdmnY2Q) · [source file](incident-replay.html)
 
 ## The pages
 
