@@ -1,6 +1,6 @@
-# Lab Notes - Part 3 - Bonus Materials
+# Lab Notes - 3 - Bonus Materials
 
-[← Lab notes](lab-notes.md) · Previous: [Part 2](lab-notes-2.md)
+[← Lab notes](lab-notes.md) · Previous: [2 - Building an SRE Agent](lab-notes-2.md)
 
 Here are some bonus activities for you to explore. There are no right answers here. For each one: **predict** what will happen, **run** it, then **compare** with what you saw.
 
@@ -20,7 +20,7 @@ It prints every agent, environment, session and deployment as a tree. It is read
 
 - How many agents and environments do you have? More than you expected?
 - Which environments have no sessions? Where did they come from?
-- Every run of `my/managed-env.py` in Part 1 creates an `env-inspect-*` environment and an `env-inspector-*` agent. Can you spot yours?
+- Every run of `my/managed-env.py` in lab 1 creates an `env-inspect-*` environment and an `env-inspector-*` agent. Can you spot yours?
 - Is there a session whose environment shows as `(deleted)`?
 
 ## 2 - Resource Management - Cleanup scripts
@@ -124,5 +124,7 @@ python my/cleanup.py --yes
 ```
 
 ---
+
+**Next → [4 - Your Personal AI Tutor](lab-notes-4.md)**
 
 [← Back to lab notes](lab-notes.md)

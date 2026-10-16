@@ -1,12 +1,12 @@
-# Lab Notes - Part 2 - Building an SRE Agent
+# Lab Notes - 2 - Building an SRE Agent
 
-[← Lab notes](lab-notes.md) · Previous: [Part 1](lab-notes-1.md)
+[← Lab notes](lab-notes.md) · Previous: [1 - Understanding Managed Environments](lab-notes-1.md)
 
 In this lab, we will build an SRE managed agent.
 
 ## 1 - Setup
 
-Be sure you have completed the [setup](lab-notes-1.md#2---setup) from Part 1.
+Be sure you have completed the [setup](lab-notes-1.md#2---setup) from lab 1.
 
 ## 2 - Create logs
 
@@ -95,6 +95,6 @@ We built a working SRE agent on Managed Agents, running in a managed environment
 
 ---
 
-**Next → [Part 3 - Bonus Materials](lab-notes-3.md)**
+**Next → [3 - Bonus Materials](lab-notes-3.md)**
 
 [← Back to lab notes](lab-notes.md)

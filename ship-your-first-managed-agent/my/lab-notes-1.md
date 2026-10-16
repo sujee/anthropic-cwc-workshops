@@ -1,4 +1,4 @@
-# Lab Notes - Part 1 - Understanding Managed Environments
+# Lab Notes - 1 - Understanding Managed Environments
 
 [← Lab notes](lab-notes.md)
 
@@ -99,4 +99,4 @@ Curious what happens when things get removed mid-session? See [03 · Kill experi
 
 ---
 
-**Next → [Part 2 - Building an SRE Agent](lab-notes-2.md)**
+**Next → [2 - Building an SRE Agent](lab-notes-2.md)**
