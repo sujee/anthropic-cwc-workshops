@@ -1,9 +1,12 @@
 <!-- Copyright 2026 Anthropic PBC -->
 <!-- SPDX-License-Identifier: Apache-2.0 -->
 
-# Incident-2277
+# Ship Your First Managed Agent — Incident-2277
 
-## [MY WORK](my/README.md)
+## Quick links
+
+- **[Lab notes](my/lab-notes.md):** start building here
+- **[My work](my/README.md):** my exploration notes, slides, animation and tutor
 
 ---
 
@@ -27,47 +30,15 @@ grep a 70k-line log inside its own cloud sandbox, call your local tools to
 pull metrics and deploys, correlate the timestamps, fetch the offending diff,
 and name the commit.
 
-## Setup
-
-You need Python **3.10+** and an [Anthropic API key](https://console.anthropic.com/settings/keys).
-
-```bash
-git clone https://github.com/anthropic-experimental/cwc-workshops
-cd cwc-workshops/ship-your-first-managed-agent
-
-python -m venv .venv
-source .venv/bin/activate          # Windows: .venv\Scripts\activate
-
-pip install -r requirements.txt
-cp .env.example .env               # then put your ANTHROPIC_API_KEY in .env
-
-python data/generate_log.py        # writes data/app.log (70k lines, not in git)
-streamlit run app.py
-```
-
-The dashboard opens at `localhost:8501`. Click around — Metrics, Logs,
-Deploys all work. The SRE Agent panel on the right says
-*"agent offline — implement `setup_agent()` in `agent.py`"*.
-
 ## What you build
 
-Open **`agent.py`**. Seven functions, all `raise NotImplementedError`. Fill them
-in and the panel comes online one step at a time.
+By the end you'll have an SRE agent that:
 
-| # | Function | API call | Lines |
-|---|---|---|---|
-| 1 | `setup_agent()` | `client.beta.skills.create` + `agents.create` | 7 |
-| 2 | `setup_environment()` | `client.beta.environments.create` | 4 |
-| 3 | `upload_log()` | `client.beta.files.upload` | 2 |
-| 4 | `start_session()` | `client.beta.sessions.create` | 5 |
-| 5 | `stream_reply()` | `client.beta.sessions.events.stream` + `.send` | 12 |
-| 6 | `handle_tool()` | runs locally — reads `data/*.json` | 7 |
-| 7 | `delete_session()` | `client.beta.sessions.delete` | 1 |
+- **Runs in a managed cloud sandbox:** it greps and analyzes a 70k-line log with Python you never deploy
+- **Calls tools on your laptop:** `get_metrics`, `get_recent_deploys` and `get_diff`, over the event stream
+- **Follows your team's runbook:** an uploaded skill keeps every investigation consistent
+- **Names the root cause:** it correlates the latency spike with a deploy and points to the bad commit
 
-That's ~38 lines total. Everything else — the system prompt, tool schemas,
-the runbook skill, the chat UI, the session picker — is provided.
-
-Stuck? `agent_complete.py` has the finished versions.
 
 ## The incident
 
@@ -118,6 +89,22 @@ data/               ← log + metrics + deploys + diff fixtures
 ui.py, assets/      ← styling
 ```
 
+## Prerequisites
+
+- Access to the [Claude Console](https://platform.claude.com/dashboard)
+- An `ANTHROPIC_API_KEY`, created in the Console
+- Python 3.10 or above
+
+## Resources
+
+- [Slide deck](https://claude.ai/artifact/5d5nWTK4wWUzowLkvwm9N3)
+- Animation of the incident investigation: [play it here](https://htmlpreview.github.io/?https://github.com/sujee/anthropic-cwc-workshops/blob/main/ship-your-first-managed-agent/my/incident-replay.html) · [online copy](https://claude.ai/artifact/MnkY9JX5ukWHjcpqdmnY2Q) · [source file](my/incident-replay.html)
+- Managed Agents docs: [overview](https://platform.claude.com/docs/en/managed-agents/overview) · [quickstart](https://platform.claude.com/docs/en/managed-agents/quickstart) · [environments](https://platform.claude.com/docs/en/managed-agents/environments)
+
 ## License
 
 MIT
+
+---
+
+**Next → [Lab notes](my/lab-notes.md)**

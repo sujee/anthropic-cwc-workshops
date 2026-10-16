@@ -23,21 +23,7 @@ client = anthropic.Anthropic()
 #       unique per org — suffix it with uuid like setup_environment() does.
 @st.cache_resource
 def setup_agent() -> str:
-    # display_name must be unique per organization, so suffix it the same way
-    # setup_environment() does — a second run, or a second person on the same
-    # workspace, otherwise fails with "Skill cannot reuse an existing display_title".
-    skill = client.beta.skills.create(
-        display_name=f"Incident Triage Runbook {uuid.uuid4().hex[:6]}",
-        files=files_from_dir("incident-triage-runbook"),
-    )
-    agent = client.beta.agents.create(
-        name="SRE Agent",
-        model=MODEL,
-        system=SYSTEM,
-        tools=TOOLS,
-        skills=[{"type": "custom", "skill_id": skill.id, "version": "latest"}],
-    )
-    return agent.id
+    raise NotImplementedError
 
 
 # ── 2. Environment ────────────────────────────────────────────────────────
@@ -45,11 +31,7 @@ def setup_agent() -> str:
 # Hint: client.beta.environments.create(name=..., config={"type": "cloud", ...})
 @st.cache_resource
 def setup_environment() -> str:
-    env = client.beta.environments.create(
-        name=f"sre-agent-{uuid.uuid4().hex[:6]}",
-        config={"type": "cloud", "networking": {"type": "unrestricted"}},
-    )
-    return env.id
+    raise NotImplementedError
 
 
 # ── 3. Upload the log ─────────────────────────────────────────────────────
@@ -57,21 +39,14 @@ def setup_environment() -> str:
 # Hint: client.beta.files.upload(file=open(...))
 @st.cache_resource
 def upload_log() -> str:
-    with open(DATA / "app.log", "rb") as f:
-        return client.beta.files.upload(file=f).id
-
+    raise NotImplementedError
 
 
 # ── 4. Session ────────────────────────────────────────────────────────────
 # Bind agent + environment, mount the log under /mnt/session/uploads/.
 # Hint: client.beta.sessions.create(agent=agent_id, environment_id=..., resources=[...])
 def start_session(agent_id: str, env_id: str, log_file_id: str) -> str:
-    session = client.beta.sessions.create(
-        agent=agent_id,
-        environment_id=env_id,
-        resources=[{"type": "file", "file_id": log_file_id, "mount_path": "app.log"}],
-    )
-    return session.id
+    raise NotImplementedError
 
 
 # ── 5. Stream loop ────────────────────────────────────────────────────────
@@ -79,51 +54,18 @@ def start_session(agent_id: str, env_id: str, log_file_id: str) -> str:
 # agent.custom_tool_use, call handle_tool() and post the result back.
 # Hint: with client.beta.sessions.events.stream(session_id) as s: ...events.send(...)
 def stream_reply(session_id: str, user_text: str):
-    with client.beta.sessions.events.stream(session_id) as stream:
-        client.beta.sessions.events.send(
-            session_id,
-            events=[
-                {
-                    "type": "user.message",
-                    "content": [{"type": "text", "text": user_text}],
-                }
-            ],
-        )
-        for ev in stream:
-            if ev.type == "agent.custom_tool_use":
-                result = handle_tool(ev.name, ev.input)
-                client.beta.sessions.events.send(
-                    session_id,
-                    events=[
-                        {
-                            "type": "user.custom_tool_result",
-                            "custom_tool_use_id": ev.id,
-                            "content": [{"type": "text", "text": result}],
-                        }
-                    ],
-                )
-            yield ev
+    raise NotImplementedError
 
 
 # ── 6. Local tool handlers ────────────────────────────────────────────────
 # When the cloud agent calls get_metrics / get_recent_deploys / get_diff,
 # answer from `metrics` / `deploys` / `diff` (already loaded from data/).
 def handle_tool(name: str, args: dict) -> str:
-    if name == "get_metrics":
-        return json.dumps(
-            metrics.get(args["service"], {}).get(args["metric"])
-            or {"error": "not found"}
-        )
-    if name == "get_recent_deploys":
-        return deploys
-    if name == "get_diff":
-        return diff if args["commit"][:7] in diff else "no diff for that commit"
-    return f"unknown tool {name}"
-
+    raise NotImplementedError
 
 
 # ── 7. Delete session ─────────────────────────────────────────────────────
 # Sessions are real cloud resources — clean them up.
 # Hint: client.beta.sessions.delete(session_id)
 def delete_session(session_id: str) -> None:
-    client.beta.sessions.delete(session_id)
+    raise NotImplementedError
