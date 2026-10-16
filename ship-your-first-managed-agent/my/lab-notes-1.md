@@ -1,4 +1,4 @@
-# Lab Notes - 1 - Understanding Managed Environments
+# Lab 1 — Understanding Managed Environments
 
 [← Lab notes](lab-notes.md)
 

@@ -1,4 +1,4 @@
-# Lab Notes - 2 - Building an SRE Agent
+# Lab 2 — Building an SRE Agent
 
 [← Lab notes](lab-notes.md) · Previous: [1 - Understanding Managed Environments](lab-notes-1.md)
 

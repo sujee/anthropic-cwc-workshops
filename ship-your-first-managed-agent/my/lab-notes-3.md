@@ -1,4 +1,4 @@
-# Lab Notes - 3 - Bonus Materials
+# Lab 3 — Bonus Materials
 
 [← Lab notes](lab-notes.md) · Previous: [2 - Building an SRE Agent](lab-notes-2.md)
 

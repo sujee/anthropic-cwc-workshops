@@ -1,4 +1,4 @@
-# Lab Notes - 4 - Your Personal AI Tutor
+# Lab 4 — Your Personal AI Tutor
 
 [← Lab notes](lab-notes.md) · Previous: [3 - Bonus Materials](lab-notes-3.md)
 
